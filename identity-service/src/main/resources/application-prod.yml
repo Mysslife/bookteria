@@ -1,0 +1,5 @@
+# những config trong file yaml nếu không ghi đè thì sẽ dùng chung trong file yml default (application.yml)
+
+jwt:
+  valid-duration: 7200 # seconds / 2 hours
+  refreshable-duration: 72000 # seconds / 20 hours
