@@ -2,8 +2,15 @@ package com.devteria.identity.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
+import com.devteria.event.dto.NotificationEvent;
+import com.devteria.identity.dto.request.ProfileCreationRequest;
+import com.devteria.identity.dto.response.ProfileCreationResponse;
+import com.devteria.identity.mapper.ProfileCreationMapper;
+import com.devteria.identity.repository.httpClient.ProfileClient;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +32,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +44,9 @@ public class UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    ProfileClient profileClient;
+    ProfileCreationMapper profileCreationMapper;
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
@@ -52,6 +64,27 @@ public class UserService {
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
+
+        // ------- Create user profile:
+        // (1) get userId:
+        ProfileCreationRequest profileRequest = profileCreationMapper.toProfileCreationRequest(request);
+        profileRequest.setUserId(user.getId());
+
+        System.out.println("profileRequest: " + profileRequest);
+
+        // (2) get authorization token from header: đã được triển khai trong AuthenticationRequestInterceptor Configuration
+        // (3) call to profile service:
+        profileClient.createProfile(profileRequest);
+
+        // ------- Publish message to kafka:
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .channel("EMAIL")
+                .recipient(request.getEmail())
+                .subject("Welcome to Bookteria")
+                .body("<p>Hello, " + request.getUsername() + "</p>")
+                .build();
+
+        kafkaTemplate.send("notification-delivery", notificationEvent);
 
         return userMapper.toUserResponse(user);
     }

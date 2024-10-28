@@ -21,6 +21,7 @@ public class UserCreationRequest {
     @Size(min = 6, message = "INVALID_PASSWORD")
     String password;
 
+    String email;
     String firstName;
     String lastName;
 
@@ -29,4 +30,5 @@ public class UserCreationRequest {
             message = "INVALID_DOB") // khi error xảy ra -> sẽ tự động văng MethodArgumentNotValidException -> sẽ được
     // hứng và xử lý bởi class GlobalExceptionHandler
     LocalDate dob;
+    String city;
 }

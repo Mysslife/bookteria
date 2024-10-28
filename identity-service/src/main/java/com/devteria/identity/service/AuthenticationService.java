@@ -73,9 +73,10 @@ public class AuthenticationService {
     @NonFinal
     @Value("${test.name}")
     private String name;
+
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        log.info("authentication key: {}", SIGNER_KEY );
-        log.info("test name: {}", name );
+        log.info("authentication key: {}", SIGNER_KEY);
+        log.info("test name: {}", name);
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         var user = userRepository
@@ -138,7 +139,8 @@ public class AuthenticationService {
                 new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
+//                .subject(user.getUsername())
+                .subject(user.getId())
                 .issuer("mysslife.com")
                 .issueTime(issueTime)
                 .expirationTime(expiryTime)
@@ -188,6 +190,8 @@ public class AuthenticationService {
 
         if (!CollectionUtils.isEmpty(user.getRoles()))
             user.getRoles().forEach(role -> {
+                log.info("user roles: {}", user.getRoles().toString());
+
                 stringJoiner.add("ROLE_"
                         + role.getName()); // JWT Authentication Manager sẽ tự đông add "SCOPE_" làm prefix. Nên muốn
                 // thay đổi thì set prefix lúc tạo constructor || add như này || dùng

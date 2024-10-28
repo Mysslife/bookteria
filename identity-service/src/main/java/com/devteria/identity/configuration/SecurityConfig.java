@@ -22,7 +22,7 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+        "/users/registration", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
     };
 
     private final CustomJwtDecoder customJwtDecoder;
@@ -42,9 +42,9 @@ public class SecurityConfig {
         // khi dùng Spring Security (SS), SS sẽ tự động enable oauth2 config, và bắt buộc phải có bearer token với những
         // requests phải xác thực, thì mới được pass
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                        .decoder(customJwtDecoder)
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
+                        .decoder(customJwtDecoder) // decoder để authenticate
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter())) // converter để convert các dữ liệu bên trong JWT claim sets nếu muốn
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())); // khi có lỗi throw ra từ authentication sẽ nhảy vào trong class này để xử lý
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
@@ -75,7 +75,8 @@ public class SecurityConfig {
         corsConfigurer.addAllowedHeader("*");
 
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
-        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfigurer); // add cors cho mọi end point trong project
+        urlBasedCorsConfigurationSource.registerCorsConfiguration(
+                "/**", corsConfigurer); // add cors cho mọi end point trong project
 
         return new CorsFilter(urlBasedCorsConfigurationSource);
     }
