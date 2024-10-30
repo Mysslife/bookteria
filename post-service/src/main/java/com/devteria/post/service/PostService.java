@@ -10,6 +10,7 @@ import com.devteria.post.exception.ErrorCode;
 import com.devteria.post.mapper.PostMapper;
 import com.devteria.post.repository.PostRepository;
 import com.devteria.post.repository.httpClient.ProfileClient;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,13 +54,16 @@ public class PostService {
         return postMapper.toPostResponse(post);
     }
 
-    public PageResponse<PostResponse> getMyPosts(int page, int size){
+    public PageResponse<PostResponse> getMyPosts(int page, int size) throws ParseException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
 
 //        JwtAuthenticationToken oauthToken = (JwtAuthenticationToken) authentication;
 //        String token = oauthToken.getToken().getTokenValue();
 //        System.out.println("token: " + token);
+//        SignedJWT signedJWT = SignedJWT.parse(token);
+//        System.out.println("signedJWT: " + signedJWT);
+//        System.out.println("signedJWT data: " + signedJWT.getJWTClaimsSet().getClaim("thai"));
 
         UserProfileResponse userProfileResponse = null;
 
