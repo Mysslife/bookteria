@@ -11,6 +11,7 @@ import com.devteria.post.mapper.PostMapper;
 import com.devteria.post.repository.PostRepository;
 import com.devteria.post.repository.httpClient.ProfileClient;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +21,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,6 +55,10 @@ public class PostService {
     public PageResponse<PostResponse> getMyPosts(int page, int size){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
+
+//        JwtAuthenticationToken oauthToken = (JwtAuthenticationToken) authentication;
+//        String token = oauthToken.getToken().getTokenValue();
+//        System.out.println("token: " + token);
 
         UserProfileResponse userProfileResponse = null;
 
